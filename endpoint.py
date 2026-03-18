@@ -1,25 +1,42 @@
 # crud.py
-from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
+from sqlalchemy.orm import Session
 import models, schemas
 
+# Configuración de tiempos por categoría (en horas)
+EXPIRY_TIMES = {
+    "Frutas/Vegetales": 48,
+    "Panadería": 24,
+    "Lácteos": 72,
+    "Enlatados": 720,  # 30 días
+    "Higiene": 2160,   # 90 días
+    "Otros": 48
+}
+
 def create_item(db: Session, item: schemas.ItemCreate):
-    # Calculamos el momento de expiración
-    expiration = datetime.utcnow() + timedelta(hours=item.duration_hours)
+    # 1. Buscamos cuánto dura según la categoría
+    hours = EXPIRY_TIMES.get(item.category, 48)
     
-    # Creamos el objeto para la DB, excluyendo duration_hours que no está en el modelo
+    # 2. Calculamos la fecha exacta de muerte del post
+    expiration = datetime.utcnow() + timedelta(hours=hours)
+    
     db_item = models.Item(
         title=item.title,
         description=item.description,
         zone=item.zone,
         category=item.category,
         contact=item.contact,
-        expires_at=expiration
+        expires_at=expiration # <--- Esto debe estar en tu models.py
     )
     db.add(db_item)
     db.commit()
     db.refresh(db_item)
     return db_item
+
+def get_active_items(db: Session):
+    # Solo devolvemos lo que NO ha expirado
+    now = datetime.utcnow()
+    return db.query(models.Item).filter(models.Item.expires_at > now).all()
 
 def delete_expired_items(db: Session):
     now = datetime.utcnow()
@@ -28,11 +45,3 @@ def delete_expired_items(db: Session):
     expired.delete(synchronize_session=False)
     db.commit()
     return count
-
-def delete_item(db: Session, item_id: int):
-    db_item = db.query(models.Item).filter(models.Item.id == item_id).first()
-    if db_item:
-        db.delete(db_item)
-        db.commit()
-        return True
-    return False

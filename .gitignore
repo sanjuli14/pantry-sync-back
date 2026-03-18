@@ -1,0 +1,31 @@
+# Entorno Virtual
+venv/
+env/
+ENV/
+.venv/
+
+# Base de Datos (IMPORTANTE: No queremos subir tus datos reales)
+*.db
+*.sqlite3
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Variables de entorno (¡NUNCA subas el .env real!)
+.env
+
+# Docker
+.dockerignore
+
+# IDEs (VS Code y otros)
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Sistema operativo
+.DS_Store
+Thumbs.db

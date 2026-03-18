@@ -10,7 +10,6 @@ class ItemBase(BaseModel):
     category: str
     contact: str
     # El usuario puede mandar cuántas horas dura el producto
-    duration_hours: Optional[int] = 48 
 
 class ItemCreate(ItemBase):
     pass
