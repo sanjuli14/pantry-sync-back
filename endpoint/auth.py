@@ -34,7 +34,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
         )
     
     access_token = auth.create_access_token(
-        data={"sub": user.id},
+        data={"sub": str(user.id)},
         expires_delta=timedelta(hours=auth.ACCESS_TOKEN_EXPIRE_HOURS)
     )
         
