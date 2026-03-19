@@ -10,12 +10,18 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Pantry-Sync API")
 
+origins = [
+    "http://localhost:4200",      
+    # "http://ip:4200", 
+    # "http://dominio.com",      
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*"], 
 )
 
 import os
