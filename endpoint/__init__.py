@@ -101,3 +101,16 @@ def delete_expired_items(db: Session):
     expired.delete(synchronize_session=False)
     db.commit()
     return count
+
+def update_item(db: Session, item_id: int, item_update: schemas.ItemUpdate):
+    item = db.query(models.Item).filter(models.Item.id == item_id).first()
+    if not item:
+        return None
+    
+    update_data = item_update.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(item, field, value)
+    
+    db.commit()
+    db.refresh(item)
+    return item
