@@ -51,3 +51,33 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 @router.get("/me", response_model=schemas.UserResponse)
 def get_me(current_user: auth.models.User = Depends(auth.get_current_user)):
     return current_user
+
+@router.put("/profile", response_model=schemas.UserResponse)
+def update_profile(
+    user_update: schemas.UserUpdate,
+    db: Session = Depends(get_db),
+    current_user: auth.models.User = Depends(auth.get_current_user)
+):
+    if user_update.alias:
+        existing = auth.get_user_by_alias(db, user_update.alias)
+        if existing and existing.id != current_user.id:
+            raise HTTPException(status_code=400, detail="El alias ya está registrado")
+    
+    if user_update.phone:
+        existing_phone = auth.get_user_by_phone(db, user_update.phone)
+        if existing_phone and existing_phone.id != current_user.id:
+            raise HTTPException(status_code=400, detail="El teléfono ya está registrado")
+    
+    return auth.update_user_profile(db, current_user.id, user_update)
+
+@router.put("/password")
+def update_password(
+    password_update: schemas.UserPasswordUpdate,
+    db: Session = Depends(get_db),
+    current_user: auth.models.User = Depends(auth.get_current_user)
+):
+    if not auth.verify_password(password_update.current_password, current_user.hashed_password):
+        raise HTTPException(status_code=400, detail="Contraseña actual incorrecta")
+    
+    auth.update_user_password(db, current_user.id, password_update.new_password)
+    return {"message": "Contraseña actualizada correctamente"}

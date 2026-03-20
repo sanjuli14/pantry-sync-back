@@ -26,6 +26,23 @@ def create_item(
     db_item = endpoint.create_item(db=db, item=item, user_id=current_user.id)
     return db_item
 
+@router.put("/{item_id}", response_model=schemas.ItemResponse)
+def update_item(
+    item_id: int,
+    item: schemas.ItemUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    db_item = db.query(models.Item).filter(models.Item.id == item_id).first()
+    if not db_item:
+        raise HTTPException(status_code=404, detail="Item no encontrado")
+    
+    if db_item.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Solo puedes editar tus propios items")
+    
+    updated_item = endpoint.update_item(db, item_id, item)
+    return updated_item
+
 @router.get("/", response_model=List[schemas.ItemResponse])
 def read_items(db: Session = Depends(get_db)):
     return endpoint.get_active_items(db)

@@ -21,6 +21,14 @@ class UserResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class UserUpdate(BaseModel):
+    alias: Optional[str] = Field(None, min_length=3, max_length=30)
+    phone: Optional[str] = Field(None, min_length=8, max_length=20)
+
+class UserPasswordUpdate(BaseModel):
+    current_password: str
+    new_password: str = Field(..., min_length=4)
+
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -40,6 +48,15 @@ class ItemBase(BaseModel):
 
 class ItemCreate(ItemBase):
     pass
+
+class ItemUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    zone: Optional[str] = None
+    category: Optional[str] = None
+    contact: Optional[str] = None
+    latitude: Optional[float] = Field(None, ge=-90, le=90)
+    longitude: Optional[float] = Field(None, ge=-180, le=180)
 
 class ItemResponse(ItemBase):
     id: int
